@@ -1,9 +1,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include "LancaErro.c"
 #include "ComandoStart.c"
 #include "ComandoChDir.c"
 #include "ComandoPwd.c"
+#include "ComandoWait.c"
+#include "ComandoWaitFor.c"
 
 int main(int argc, char *argv[]){
   while(1){
@@ -38,15 +42,17 @@ int main(int argc, char *argv[]){
       }
 
     else if(!strcmp(comando, "wait")){
-        printf("Executando comando wait\n");
+        ComandoWait();
       }
 
     else if(!strcmp(comando, "waitfor")){
-      printf("Executando comando waitfor\n");
+      //Passando o PID
+      ComandoWaitFor(palavras[1]);
       }
 
     else if(!strcmp(comando, "run")){
-      printf("Executando comando run\n");
+      comandoStart(palavras);
+      ComandoWait();
       }
 
     else if(!strcmp(comando, "watchdog")){

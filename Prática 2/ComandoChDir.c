@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include "LancaErro.c"
-
 int comandoChDir(char** args){
     char* newDirectory = args[1];
 

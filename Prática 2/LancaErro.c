@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-
 void lancaErro(char* mensagemErro, char* erro, int codigoErrno){
   printf("%s: %s.", mensagemErro, erro);
     if (codigoErrno == EAGAIN) {
@@ -27,6 +24,12 @@ void lancaErro(char* mensagemErro, char* erro, int codigoErrno){
         printf(" Erro: Memória de kernel insuficiente.\n");
     } else if (codigoErrno == ENOTDIR) {
         printf(" Erro: Algum componente no caminho do arquivo não é um diretório.\n");
+    } else if (codigoErrno == ECHILD) {
+        printf(" Erro: O processo nao existe.\n");
+    } else if (codigoErrno == EINTR) {
+        printf(" Erro: nao ficara.\n");
+    } else if (codigoErrno == EINVAL) {
+        printf(" Erro:nao ficara.\n");
     } else {
         printf("%s.\n", strerror(errno));
     }
