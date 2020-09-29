@@ -1,6 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-
 int comandoPwd(){
     char caminhoDiretorio[200];
 

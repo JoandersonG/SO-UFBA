@@ -26,6 +26,10 @@ void lancaErro(char* mensagemErro, char* erro, int codigoErrno){
         printf(" Erro: Algum componente no caminho do arquivo não é um diretório.\n");
     } else if (codigoErrno == ECHILD) {
         printf(" Erro: O processo nao existe.\n");
+    } else if (codigoErrno == EINTR) {
+        printf(" Erro: nao ficara.\n");
+    } else if (codigoErrno == EINVAL) {
+        printf(" Erro:nao ficara.\n");
     } else {
         printf("%s.\n", strerror(errno));
     }

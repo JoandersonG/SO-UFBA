@@ -1,7 +1,3 @@
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 int ComandoWaitFor(char* pid){
     int status;
     int waitStatus;

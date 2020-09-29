@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include  <sys/types.h>
 #include "LancaErro.c"
 #include "ComandoStart.c"
 #include "ComandoChDir.c"

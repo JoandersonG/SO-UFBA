@@ -1,5 +1,3 @@
-#include <sys/wait.h>
-
 int ComandoWait(){
     int status;
     int idProcesso;
