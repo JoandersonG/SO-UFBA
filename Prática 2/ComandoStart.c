@@ -1,8 +1,3 @@
-#include  <stdio.h>
-#include  <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-#include "LancaErro.c"
 
 int comandoStart(char **arg) {
 
