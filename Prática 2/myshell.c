@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
       nPalavras++;
     }
     if (nPalavras == 100) {//identificação comando >= 100 palavras
-      lancaErro("Não foi possível realizar a operação", palavra[0], errno);
+      lancaErro("Não foi possível realizar a operação", &palavra[0], errno);
       continue;
     }
 
