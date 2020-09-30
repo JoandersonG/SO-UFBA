@@ -17,23 +17,31 @@ int main(int argc, char *argv[]){
     printf("myshell> ");
     fflush(stdout);
 
-    char linha[4096];
+    char linha[4096];// limitação de entrada do usuário
     if(fgets(linha, sizeof(linha), stdin) == NULL)
       break;
 
-    char *palavras[100];
+    char *palavras[100]; //limitação de palavras que um usuário pode digitar
     palavras[0] = strtok(linha , " \t\n");
-    char* comando = palavras[0];
+    char* comando = palavras[0]; //comando do myshell
 
-    char *palavra;
-    int nPalavras = 1;
+    char *palavra; //cada plavra identificada dentro dos argumentos do usuário
+    int nPalavras = 1; //contador do número de palavras do argumento
 
-    while(1){
+  /*identifica palavras através dos critérios de parada num limite de 100
+    e salva no vetor palavras
+  */
+    while(nPalavras < 100){ 
       palavra = strtok(0, " \t\n");
       if(palavra == NULL) break;
       palavras[nPalavras] = palavra;
       nPalavras++;
     }
+    if (nPalavras == 100) {//identificação comando >= 100 palavras
+      lancaErro("Não foi possível realizar a operação", palavra[0], errno);
+      continue;
+    }
+
     palavras[nPalavras] = 0;
 
     /*
