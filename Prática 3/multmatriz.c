@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <errno.h>
+#include "LancaErro.c"
 
 int** tasks;
 double** matrizProduto;
@@ -54,13 +56,32 @@ void * calculaEmThread(void * args) {
         printf("calculado a task %d: multiplicando linha %d por coluna %d e total: %f\n", taskNumber, linhaA, colunaB, matrizProduto[linhaA][colunaB]);
 
     }
+    return NULL;
+}
+
+void freeMatrizA(int tam) {
+    if (matrizA == NULL) return;
+    for (int i = 0; i < tam; i++) free(matrizA[i]);
+    free(matrizA);
+}
+void freeMatrizB(int tam) {
+    if (matrizB == NULL) return;
+    for (int i = 0; i < tam; i++) free(matrizB[i]);
+    free(matrizB);
+}
+void freeMatrizProduto(int tam) {
+    if (matrizProduto == NULL) return;
+    for (int i = 0; i < tam; i++) free(matrizProduto[i]);
+    free(matrizProduto);
 }
 
 int main(int argc, char ** argv) {
 
-    //testar se os argumentos são válidos (quantidade correta e ints válidos e se dá para fazer multiplicação [tam linha x colunas])
-    if(argc) {
-        //aqui os testes e mensagens de erro
+    //testes e mensagens de erro do argumetno fornecido
+    if(argc < 6) {
+        printf("Impossível iniciar o programa. Erro: argumentos insuficientes\n");
+        printf("Forneça linha e coluna da primeira matriz, linha e coluna da segunda matriz e quantidade de threads, separados por um espaço em branco. \n");
+        return 1;
     }
 
     //armazena os argumentos em variáveis identificáveis
@@ -69,19 +90,54 @@ int main(int argc, char ** argv) {
     int linhasB = atoi(argv[3]); //quantidade de linhas da segunda matriz
     int colunasB = atoi(argv[4]); //quantidade de colunas da segunda matriz
 
+    //teste de possibilidade de multiplicação de matriz
+    if (colunasA != linhasB || linhasA <= 0 || linhasB <= 0 || colunasA <= 0 || colunasB <= 0) {
+        printf("Impossível calcular. Erro: matrizes com valores inválidos de linha/coluna\n");
+        return 1;
+    }
+
     //define o máximo dee threads a serem usadas
     int QTD_THREADS = atoi(argv[5]);
+    //testa validade de QTD_THREADS
+    if (QTD_THREADS <= 0) {
+        printf("Impossível calcular. Erro: quantidade de threads informada é inválida.\n");
+        return 1;
+    }
     pthread_t threads[QTD_THREADS];
 
     //cria as matrizes A e B
     matrizA = malloc(sizeof(double *) * linhasA);
+    if (matrizA == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        return 1;
+    }
     for (int i = 0; i < linhasA; ++i) {
         matrizA[i] = malloc(sizeof(double) * colunasA);
+        if (matrizA[i] == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        freeMatrizA(linhasA);
+        return 1;
+    }
     }
     //invertendo as colunas e linhas de B para permitir calcular usando o vetor linha
     matrizB = malloc(sizeof(double *) * colunasB);
+    if (matrizB == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        freeMatrizA(linhasA);
+        return 1;
+    }
     for (int i = 0; i < colunasB; ++i) {
         matrizB[i] = malloc(sizeof(double) * linhasB);
+        if (matrizB[i] == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        freeMatrizA(linhasA);
+        free(matrizB);
+        return 1;
+    }
     }
 
     //salvo globalmente o total de linhas de A para cálculos posteriores
@@ -89,8 +145,24 @@ int main(int argc, char ** argv) {
 
     //cria uma matriz das dimensões que uma matriz produto precisa para o tamanho de A e B
     matrizProduto = malloc( sizeof(double*) * linhasA);
+    if (matrizProduto == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        freeMatrizA(linhasA);
+        freeMatrizB(colunasB);
+        free(matrizProduto);
+        return 1;
+    }
     for (int i = 0; i < linhasA; ++i) {
         matrizProduto[i] = malloc( sizeof(double) * colunasB);
+        if (matrizProduto[i] == NULL) {
+            //não conseguiu alocar memória
+            printf("Impossível executar programa. Erro: memória insuficiente.");
+            freeMatrizA(linhasA);
+            freeMatrizB(colunasB);
+            free(matrizProduto);
+            return 1;
+        }
     }
     //todo: teste se alocações falharem
 
@@ -116,22 +188,38 @@ int main(int argc, char ** argv) {
     //popula matriz A
     for (int i = 0; i < linhasA; ++i) {
         for (int j = 0; j < colunasA; ++j) {
-            matrizA[i][j] = rand() % 5;
+            matrizA[i][j] = rand() % 1000;
         }
     }
 
     //popula matriz B
     for (int i = 0; i < colunasB; ++i) {
         for (int j = 0; j < linhasB; ++j) {
-            matrizB[i][j] = rand() % 5;
+            matrizB[i][j] = rand() % 1000;
         }
     }
 
     //aqui guardo as contas que precisarão ser feitas
     taskNumber = linhasA * colunasB;
     tasks = malloc(sizeof(int *) * taskNumber);
+    if (tasks == NULL) {
+        //não conseguiu alocar memória
+        printf("Impossível executar programa. Erro: memória insuficiente.");
+        freeMatrizA(linhasA);
+        freeMatrizB(colunasB);
+        freeMatrizProduto(linhasA);
+        return 1;
+    }
     for (int i = 0; i < taskNumber; ++i) {
         tasks[i] = malloc(sizeof(int) * 2);
+        if (tasks[i] == NULL) {
+        //não conseguiu alocar memória
+            printf("Impossível executar programa. Erro: memória insuficiente.");
+            freeMatrizA(linhasA);
+            freeMatrizB(colunasB);
+            freeMatrizProduto(linhasA);
+            return 1;
+        }
     }
     /*task agora é um do tipo:
      * [L1, C2]
@@ -165,7 +253,8 @@ int main(int argc, char ** argv) {
         tid[i] = i;
         int errTest = pthread_create(&(threads[i]), NULL, calculaEmThread, &(tid[i]));
         if (errTest != 0){
-            printf("Um erro ocorreu ao iniciar a thread %d. Erro: %s", i, strerror(errTest));
+            lancaErro(errTest);
+            //printf("Um erro ocorreu ao iniciar a thread %d. Erro: %s", i, strerror(errTest));
         }
         printf("iniciando a thread %d. Seu id é %lu \n", i, threads[i]);
     }
@@ -173,9 +262,8 @@ int main(int argc, char ** argv) {
     //espera threads finalizarem
     for (int i = 0; i < QTD_THREADS; ++i) {
         int errorTest = pthread_join(threads[i], NULL);
-        //printf("error test: %d\n", errorTest);
         if (errorTest != 0) {
-            printf("Um erro ocorreu ao finalizar thread %d. Erro: %s\n", i, strerror(errorTest));
+            lancaErro(errorTest);
         }
     }
 
