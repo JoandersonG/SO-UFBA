@@ -33,14 +33,14 @@ int main(){
   for(int i = 0; i < threadsNum; i++){
     status = pthread_create (&threads[i], NULL, calculadorPi, (void*)i);
     if(status != 0){
-      lancaErro(errno);
+      lancaErro(status);
     }
   }
 
   for(int i = 0; i < threadsNum; i++){
     status = pthread_join(threads[i], &thread_res);
     if(status != 0){
-      lancaErro(errno);
+      lancaErro(status);
     }
   }
 
