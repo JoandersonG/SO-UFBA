@@ -47,7 +47,6 @@ void * Cliente(void * args) {
 
 void * Barbeiro(void * args) {
     while (1){
-       
         down(&cliente_sofa);//dorme ate ter cliente para ser atendido
         printf("Barbeiro encontrou com cliente para corte\n");
          printf("Esperando barbeiro disponível para corte\n");

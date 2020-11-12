@@ -16,7 +16,7 @@ sem_t MAXburacos;//gerencia a quantidade máxima de buracos não finalizados, co
 void * joao(void * args) {
     while(1) {
         sem_wait(&MAXburacos);
-        sem_wait(&pa);
+        sem_wait(&pa);        
         printf("Joao cava buraco\n");
         sem_post(&pa);
         sem_post(&vazios);
@@ -35,6 +35,7 @@ void * pedro(void * args) {
 void * paulo(void * args) {
     while(1) {
         //sem_wait(&buracos);
+        
         sem_wait(&afechar);
         sem_wait(&pa);
         printf("Paulo fecha buraco\n");

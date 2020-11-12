@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <errno.h>
-#include "lancaErro.c"
+#include "LancaErro.c"
 
 typedef struct
 {
@@ -19,7 +19,7 @@ int statusErro = 0;
 int numCadeiras = 0;
 int numEstudantes = 0;
 
-pthread_t estudantes[64];
+pthread_t estudantes[100];
 Monitor monitor;
 
 sem_t cadeiras;
@@ -40,10 +40,11 @@ void *estudanteAtendido(void* i){
         if(statusErro < 0) lancaErro("Problema para liberar o mutex de acesso as cadeiras", errno);
         return;
     }
+    cadeirasOcupadas++;
     statusErro = pthread_mutex_unlock(&acessoCadeira);
     if(statusErro < 0) lancaErro("Problema para liberar o mutex de acesso as cadeiras", errno);
 
-    cadeirasOcupadas++;
+    
 
     statusErro = pthread_mutex_lock(&atendimento);
     if(statusErro < 0) lancaErro("Problema para obter o mutex de atendimento", errno);
@@ -58,18 +59,20 @@ void *estudanteAtendido(void* i){
     statusErro = sem_post(&cadeiras);
     if(statusErro < 0) lancaErro("Problema para retirar item do semaforo de cadeiras", errno);
     cadeirasOcupadas--;
-    statusErro = pthread_mutex_unlock(&acessoCadeira);
-    if(statusErro < 0) lancaErro("Problema para liberar mutex de acesso a cadeiras", errno);
-    statusErro = pthread_mutex_unlock(&atendimento);
-    if(statusErro < 0) lancaErro("Problema para liberar o mutex de atendimento", errno);
 
-    
     printf("Estudante %d foi atendido.\n", index);
 
     if(cadeirasOcupadas == 0){
         printf("Monitor dormindo...\n");
         monitor.dorme = true;
     }
+
+    statusErro = pthread_mutex_unlock(&acessoCadeira);
+    if(statusErro < 0) lancaErro("Problema para liberar mutex de acesso a cadeiras", errno);
+    statusErro = pthread_mutex_unlock(&atendimento);
+    if(statusErro < 0) lancaErro("Problema para liberar o mutex de atendimento", errno);
+
+    
     pthread_exit(index);
 }
 
@@ -77,7 +80,7 @@ int main(int argc, char *argv[]){
     printf("Digite o numero maximo de cadeiras: ");
     scanf("%d", &numCadeiras);
 
-    if(numCadeiras <= 2){
+    if(numCadeiras < 2){
         printf("É preciso ter pelo menos duas cadeiras.");
         return 0;
     }
@@ -85,7 +88,10 @@ int main(int argc, char *argv[]){
     sem_init(&cadeiras, 0, numCadeiras);
 
     //Inicializando muter (atendimento)
-    pthread_mutex_init(&atendimento, NULL);
+    statusErro = pthread_mutex_init(&atendimento, NULL);
+    if(statusErro < 0) lancaErro("Problema para iniciar o mutex de atendimento", errno);
+    statusErro = pthread_mutex_init(&acessoCadeira, NULL);
+    if(statusErro < 0) lancaErro("Problema para iniciar o mutex de acesso as cadeiras", errno);
 
     
     while(1){
